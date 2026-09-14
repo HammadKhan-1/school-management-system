@@ -15,17 +15,17 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        //ignore default user seeder for now
+        // ignore default user seeder for now
         /*
-         User::factory()->create([
+        User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
         */
 
-        $this ->call([
-            //seed accounts table
-          SchoolAccountsTableSeeder::class,  
+        $this->call([
+            // seed accounts table
+            SchoolAccountsTableSeeder::class,
         ]);
 
     }

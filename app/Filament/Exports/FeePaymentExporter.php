@@ -15,9 +15,10 @@ class FeePaymentExporter extends Exporter
     {
         return [
             ExportColumn::make('student.name') ->label('Student Name'),
+            ExportColumn::make('guardian_name') ->label('Guardian Name'),
             ExportColumn::make('student.stream.name') ->label('Class'),
             ExportColumn::make('feestypes.name') ->label('Fees Type'),
-            ExportColumn::make('amount') ->label('Amount'),  
+            ExportColumn::make('amount') ->label('Amount'),
             ExportColumn::make('paymentmode.name') ->label('Payment Mode'),
             ExportColumn::make('users.name') ->label('Approved By'),
             ExportColumn::make('created_at') ->label('Payment Date'),

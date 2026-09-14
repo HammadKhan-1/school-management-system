@@ -16,13 +16,19 @@ class SchoolAccountsTableSeeder extends Seeder
        // Get the application name
         $appName = config('app.name');
 
-        // Create and insert the data
-        DB::table('school_accounts')->insert([
-            'created_at' => now(),
-            'name' => $appName,
-            'income' => 0.0,
-            'expenses' => 0.0,
-            'balance' => 0.0,
-        ]);
+        // Only insert the account if it doesn't already exist
+        $exists = DB::table('school_accounts')
+            ->where('name', $appName)
+            ->exists();
+
+        if (! $exists) {
+            DB::table('school_accounts')->insert([
+                'created_at' => now(),
+                'name' => $appName,
+                'income' => 0.0,
+                'expenses' => 0.0,
+                'balance' => 0.0,
+            ]);
+        }
     }
 }

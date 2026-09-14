@@ -30,8 +30,8 @@ class StudentsOverview extends BaseWidget
                 '4','5','3','7','9','6','8'
             ]),
 
-            Stat::make('Recently Admitted', 
-                    Student::whereMonth('created_at', Carbon::now()->month)
+                Stat::make('Recently Admitted', 
+                    Student::whereRaw("CAST(strftime('%m', created_at) AS INTEGER) = ?", [Carbon::now()->month])
                    ->get()
                    ->count())
             -> description('Admitted This Month')
@@ -40,9 +40,9 @@ class StudentsOverview extends BaseWidget
             ->icon('heroicon-o-clock')
             ->color('success'),
 
-            Stat::make('Class Admissions', Student::whereMonth('created_at', Carbon::now()->month)
-                   ->distinct('stream_id')
-                   ->count())
+                 Stat::make('Class Admissions', Student::whereRaw("CAST(strftime('%m', created_at) AS INTEGER) = ?", [Carbon::now()->month])
+                     ->distinct('stream_id')
+                     ->count())
             -> description('Classes that Admitted This Month')
             -> descriptionIcon('heroicon-o-arrow-right')
             ->icon('heroicon-o-building-library')

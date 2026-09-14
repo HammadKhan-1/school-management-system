@@ -8,6 +8,9 @@ use App\Models\StudentAccount;
 use App\Models\FeePayment;
 use App\Models\Receipt;
 use App\Models\SchoolAccount;
+use Illuminate\Support\Facades\DB;
+use Filament\Support\Exceptions\Halt;
+use Throwable;
 
 
 class CreateFeePayment extends CreateRecord
@@ -23,7 +26,7 @@ class CreateFeePayment extends CreateRecord
         }
 
         return $data;
-        
+
     }
 
     // chain a transaction to update the student and school accounts
@@ -62,7 +65,76 @@ class CreateFeePayment extends CreateRecord
 
     protected function getCreatedNotificationTitle(): ?string
     {
-        return 'Fee Payment Added Successfuly';
+        return 'Fee Payment Added Successfully';
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
+
+    protected function getCreateAnotherFormAction(): Actions\Action
+    {
+        return Actions\Action::make('createAnother')
+            ->label(__('filament-panels::resources/pages/create-record.form.actions.create_another.label'))
+            ->action('createAnother')
+            ->extraAttributes(['data-create-and-open-receipt' => 'true'])
+            ->keyBindings(['mod+shift+s'])
+            ->color('gray');
+    }
+
+    public function createAnother(): void
+    {
+        $this->createAndOpenReceipt();
+    }
+
+    public function createAndOpenReceipt(): void
+    {
+        $this->authorizeAccess();
+
+        try {
+            DB::beginTransaction();
+
+            $this->callHook('beforeValidate');
+
+            $data = $this->form->getState();
+
+            $this->callHook('afterValidate');
+
+            $data = $this->mutateFormDataBeforeCreate($data);
+
+            $this->callHook('beforeCreate');
+
+            $this->record = $this->handleRecordCreation($data);
+
+            $this->form->model($this->getRecord())->saveRelationships();
+
+            $this->callHook('afterCreate');
+
+            DB::commit();
+        } catch (Halt $exception) {
+            $exception->shouldRollbackDatabaseTransaction() ? DB::rollBack() : DB::commit();
+
+            return;
+        } catch (Throwable $exception) {
+            DB::rollBack();
+
+            throw $exception;
+        }
+
+        $this->rememberData();
+
+        $this->getCreatedNotification()?->send();
+
+        // open invoice in a new tab via browser event
+        $url = route('feepayment.invoice.download', ['payment' => $this->getRecord()->id]);
+        $this->dispatch('open-in-new-tab', $url);
+
+        // reset form for another create
+        $this->form->model($this->getRecord()::class);
+        $this->record = null;
+
+        $this->fillForm();
     }
 
     public function getTitle() : string

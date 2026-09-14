@@ -40,4 +40,20 @@ class Student extends Model
     public function studentaccount(){
      return $this->hasOne(StudentAccount::class);   
     }
+
+    protected static function booted()
+    {
+        static::deleting(function ($student) {
+            // delete receipts for this student
+            $student->receipt()->get()->each->delete();
+
+            // delete fee payments (they will delete their receipts in their own deleting handler)
+            $student->feepayment()->get()->each->delete();
+
+            // delete student account if exists
+            if ($student->studentaccount) {
+                $student->studentaccount->delete();
+            }
+        });
+    }
 }

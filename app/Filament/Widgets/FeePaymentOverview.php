@@ -34,7 +34,7 @@ class FeePaymentOverview extends BaseWidget
 
             //payments made this month
             Stat::make('This Month\'s Collection', 
-                FeePayment::whereMonth('created_at', Carbon::now()->month)
+                FeePayment::whereRaw("CAST(strftime('%m', created_at) AS INTEGER) = ?", [Carbon::now()->month])
                                     ->sum('amount'))
             -> description('Fee Collected this month')
             -> descriptionIcon('heroicon-o-arrow-right')

@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Filament\Resources\FeePaymentResource\Pages;
 use App\Filament\Resources\FeePaymentResource\RelationManagers;
 use App\Models\FeePayment;
+use App\Models\Student;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -36,17 +37,23 @@ class FeePaymentResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('student_id') 
+                Forms\Components\Select::make('student_id')
                     ->required()
                     ->relationship('student', 'name')
+                    ->getOptionLabelFromRecordUsing(function (Student $record) {
+                        $fatherName = $record->father_name ?? $record->guardian_name ?? 'N/A';
+                        $className = $record->stream->name ?? $record->class->name ?? 'No Class';
+
+                        return "{$record->name} — S/O: {$fatherName} ({$className})";
+                    })
+                    ->searchable(['name', 'father_name', 'guardian_name', 'roll_number', 'admission_no'])
                     ->preload()
-                    ->searchable()
                     ->columnSpan(2)
                     ->label('Student Name:'),
 
-                Forms\Components\TextInput::make('amount') 
+                Forms\Components\TextInput::make('amount')
                     ->required()
-                    ->label('Amount:') 
+                    ->label('Amount:')
                     ->maxLength(10)
                     ->numeric()
                     ->minValue(10)
@@ -60,40 +67,45 @@ class FeePaymentResource extends Resource
                     ])
                     ->default('0')
                     ->label('Is it a correction?:'),
-                
-                Forms\Components\Select::make('feestypes_id')
-                    ->relationship('feestypes', 'name')
-                    ->preload()
-                    ->searchable()
-                    ->createOptionForm([
-                        Forms\Components\Textarea::make('name')
-                        ->label('Fee Type')
-                        ->placeholder('e.g. Tution fees')
-                        ->required()
-                        ->maxLength(255),
-                        ])
-                    ->label('Fee Type:')
-                    ->required(),
+
+            Forms\Components\Select::make('feestypes_id')
+                 ->label('Fee Type:')
+                 ->options(
+                \App\Models\Feestype::query()
+                ->orderBy('name')
+                ->pluck('name', 'id')
+                ->toArray()
+                 )
+                 ->required()
+                ->createOptionForm([
+            Forms\Components\Textarea::make('name')
+                ->label('Fee Type')
+                ->placeholder('e.g. Tuition fees')
+                ->required()
+                ->maxLength(255),
+                 ]),
 
             Forms\Components\Select::make('paymentmode_id')
-                    ->relationship('paymentmode', 'name')
-                    ->preload()
-                    ->searchable()
-                    ->createOptionForm([
-                        Forms\Components\Textarea::make('name')
-                        ->label('Fee Type')
-                        ->placeholder('e.g. MPESA')
-                        ->required()
-                        ->maxLength(255),
-                        ])
-                    ->label('Payment Mode:')
-                    ->required(),
+                ->label('Payment Mode:')
+                ->options(
+            \App\Models\Paymentmode::query()
+                ->orderBy('name')
+                ->pluck('name', 'id')
+                ->toArray()
+            )
+                ->required()
+                ->createOptionForm([
+            Forms\Components\Textarea::make('name')
+                ->label('Payment Mode')
+                ->placeholder('e.g. MPESA')
+                ->required()
+                ->maxLength(255),
+                ]),
 
-            Forms\Components\Hidden::make('added_by')
+                Forms\Components\Hidden::make('added_by')
                     ->default(Auth::user()->id)
                     ->required()
                     ->columnSpan(2),
-
 
             ]);
     }
@@ -102,36 +114,36 @@ class FeePaymentResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('student.name') 
+                Tables\Columns\TextColumn::make('student.name')
                     ->sortable()
                     ->searchable()
                     ->label('Student Name'),
 
-                Tables\Columns\TextColumn::make('student.stream.name') 
+                Tables\Columns\TextColumn::make('student.stream.name')
                     ->sortable()
                     ->label('Class')
                     ->searchable(),
-                
+
                 Tables\Columns\TextColumn::make('feestypes.name')
-                    ->label('Fees Type') 
+                    ->label('Fees Type')
                     ->sortable(),
-                
+
                 Tables\Columns\TextColumn::make('amount'),
 
-                Tables\Columns\TextColumn::make('paymentmode.name') 
-                    ->sortable() 
+                Tables\Columns\TextColumn::make('paymentmode.name')
+                    ->sortable()
                     ->label('Payment Mode'),
 
-                Tables\Columns\TextColumn::make('users.name') 
-                    ->sortable() 
+                Tables\Columns\TextColumn::make('users.name')
+                    ->sortable()
                     ->searchable()
                     ->label('Approved By'),
 
-                Tables\Columns\TextColumn::make('created_at') 
-                    ->dateTime() 
-                    ->label('Payment Date') 
+                Tables\Columns\TextColumn::make('created_at')
+                    ->dateTime()
+                    ->label('Payment Date')
                     ->sortable(),
-                
+
 
             ])
             ->filters([
@@ -162,17 +174,17 @@ class FeePaymentResource extends Resource
 
                     ->indicateUsing(function (array $data): array {
                         $indicators = [];
-                 
+
                         if ($data['from'] ?? null) {
                             $indicators[] = Indicator::make('Created from ' . Carbon::parse($data['from'])->toFormattedDateString())
                                 ->removeField('from');
                         }
-                 
+
                         if ($data['until'] ?? null) {
                             $indicators[] = Indicator::make('Created until ' . Carbon::parse($data['until'])->toFormattedDateString())
                                 ->removeField('until');
                         }
-                 
+
                         return $indicators;
                     }),
             ])

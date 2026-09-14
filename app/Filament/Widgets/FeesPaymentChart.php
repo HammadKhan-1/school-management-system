@@ -19,7 +19,7 @@ class FeesPaymentChart extends ChartWidget
     protected function getData(): array
     {
        
-        $data = FeePayment::select(DB::raw('MONTH(created_at) as month'), DB::raw('SUM(amount) as total'))
+        $data = FeePayment::select(DB::raw("CAST(strftime('%m', created_at) AS INTEGER) as month"), DB::raw('SUM(amount) as total'))
             ->where('created_at', '>=', now()->subYears(1))
             ->groupBy('month')
             ->get()
@@ -52,9 +52,9 @@ class FeesPaymentChart extends ChartWidget
         
         $feePaymentsPerMonth=[];
 
-        $months =collect(range(1, 12)) ->map(function($month) use ($now , $feePaymentsPerMonth){
-           $count = FeePayment::whereMonth('created_at', Carbon::parse($now->month($month)-> format('Y-m')))->sum();
-         });
+                $months = collect(range(1, 12))->map(function($month) use ($now) {
+                        return FeePayment::whereRaw("CAST(strftime('%m', created_at) AS INTEGER) = ?", [$month])->sum('amount');
+                });
 
     }
 

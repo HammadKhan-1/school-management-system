@@ -19,7 +19,7 @@ class SchoolExpenses extends ChartWidget
     protected function getData(): array
     {
 
-        $data = SchoolExpense::select(DB::raw('MONTH(created_at) as month'), DB::raw('SUM(amount) as total'))
+        $data = SchoolExpense::select(DB::raw("CAST(strftime('%m', created_at) AS INTEGER) as month"), DB::raw('SUM(amount) as total'))
             ->where('created_at', '>=', now()->subYears(1))
             ->groupBy('month')
             ->get()

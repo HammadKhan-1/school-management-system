@@ -32,7 +32,7 @@ return [
     ],
 
     'currency' => [
-        'code' => 'KES',
+        'code' => 'PKR',
 
         /*
          * Usually cents
@@ -40,8 +40,8 @@ return [
          *
          * Example: Amount in words: Eight hundred fifty thousand sixty-eight EUR and fifteen ct.
          */
-        'fraction' => 'ct.',
-        'symbol'   => 'Sh.',
+        'fraction' => 'Ps.',
+        'symbol'   => 'Rs.',
 
         /*
          * Example: 19.00
@@ -67,8 +67,7 @@ return [
     ],
 
     'paper' => [
-        // A4 = 210 mm x 297 mm = 595 pt x 842 pt
-        'size'        => 'a4',
+        'size'        => [0, 0, 204, 288],
         'orientation' => 'portrait',
     ],
 
@@ -91,7 +90,7 @@ return [
             'address'       => '89982 Pfeffer Falls Damianstad, CO 66972-8160',
             'code'          => '41-1985581',
             'vat'           => '123456789',
-            'phone'         => '760-355-3930',
+            'phone'         => '03450212304',
             'custom_fields' => [
                 /*
                  * Custom attributes for Seller::class

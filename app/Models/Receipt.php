@@ -19,7 +19,7 @@ class Receipt extends Model
     ];
 
     public function feepayment(){
-        return $this->belongsTo(FeePayment::class);
+        return $this->belongsTo(FeePayment::class, 'feepayment_id');
     }
 
     public function student(){
