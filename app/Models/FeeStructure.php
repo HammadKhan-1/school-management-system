@@ -17,6 +17,21 @@ class FeeStructure extends Model
         'added_by',
     ];
 
+    protected static function booted(): void
+    {
+        static::deleting(function (FeeStructure $feeStructure) {
+            \Illuminate\Support\Facades\DB::transaction(function () use ($feeStructure) {
+                $amountToReverse = (float) $feeStructure->amount;
+                $stdAccounts = StudentAccount::where('stream_id', $feeStructure->stream_id)->get();
+
+                foreach ($stdAccounts as $stdAccount) {
+                    $stdAccount->balance = $stdAccount->balance + $amountToReverse;
+                    $stdAccount->debit = $stdAccount->debit + $amountToReverse;
+                    $stdAccount->save();
+                }
+            });
+        });
+    }
 
     public function stream(){
         return $this->belongsTo(Stream::class);
