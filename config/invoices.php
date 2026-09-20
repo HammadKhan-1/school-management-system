@@ -67,7 +67,7 @@ return [
     ],
 
     'paper' => [
-        'size'        => [0, 0, 204, 288],
+        'size'        => [0, 0, 195, 300],
         'orientation' => 'portrait',
     ],
 
