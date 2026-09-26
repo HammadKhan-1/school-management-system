@@ -59,7 +59,7 @@ class FeePaymentResource extends Resource
                     ->maxLength(10)
                     ->numeric()
                     ->minValue(10)
-                    ->placeholder('e.g. 30000'),
+                    ->placeholder('e.g. 3000'),
 
                 Forms\Components\Select::make('is_correction')
                     ->required()
