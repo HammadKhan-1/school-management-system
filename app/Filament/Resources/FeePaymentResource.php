@@ -47,7 +47,9 @@ class FeePaymentResource extends Resource
                         return "{$record->name} — S/O: {$fatherName} ({$className})";
                     })
                     ->searchable(['name', 'father_name', 'guardian_name', 'roll_number', 'admission_no'])
-                    ->preload()
+                    ->optionsLimit(10)
+                    ->searchDebounce(500)
+                    ->reactive()
                     ->columnSpan(2)
                     ->label('Student Name:'),
 
